@@ -133,6 +133,11 @@ async function init() {
     }
     if (queryres.status === "qrredeemdupe") {
       showLoading("This QR code has already been redeemed");
+    } else {
+      confetti({
+        count: 300,
+        fade: true	
+      });
     }
 
     //DATE	SESSIONID	STAMPS	LOTTONUM
