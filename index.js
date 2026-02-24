@@ -46,6 +46,11 @@ function closeModal() {
 function openModal() {
   const modal = document.getElementById('rewardModal');
   const content = document.getElementById('modalContent');
+
+  confetti({
+    count: 300,
+    fade: false	
+  });
   
   modal.classList.remove('opacity-0', 'pointer-events-none');
   content.classList.remove('scale-90');
