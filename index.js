@@ -154,7 +154,7 @@ async function init() {
   }
 
   if (!firstimer) {
-    showLoading("Querying stamps data...");
+    showLoading("Retrieving stamps...");
     const res = await callServer("QUERY", {"deviceID": id});
     if (!res.ok) {
       showError("Error");
