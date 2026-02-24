@@ -98,7 +98,7 @@ async function init() {
     </div>`
   }
 
-  const urlParams = new URLSearchParams(queryString);
+  const urlParams = new URLSearchParams(window.location.search);
 
   let id = localStorage.getItem("device_id");
   let firstimer = false;
