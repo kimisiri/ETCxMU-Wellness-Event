@@ -124,9 +124,14 @@ async function init() {
 
     //DATE	SESSIONID	STAMPS	LOTTONUM
     let stamps = queryres.result[2].split("|"); // encoded as "1|2|3|..."
+    let c = 0
     stamps.forEach(element => {
       redeemStamp(Number(element));
+      c+=1;
     });
+    if (c>=4 && !queryres.result[3]) {
+      openModal();
+    }
   }
   hideLoading();
 }
