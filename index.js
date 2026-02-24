@@ -131,6 +131,9 @@ async function init() {
       showError("Device Error", "<big>\""+queryres.status+"\"</big><br><small>"+id+"</small><br>Please try again later!<br><br><small>Contact ETC staff members if the issue persist!</small>");
       return;
     }
+    if (queryres.status === "qrredeemdupe") {
+      showLoading("This QR code has already been redeemed");
+    }
 
     //DATE	SESSIONID	STAMPS	LOTTONUM
     let stamps = String(queryres.result[2]).split("|"); // encoded as "1|2|3|..."
