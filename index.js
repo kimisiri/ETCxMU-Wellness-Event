@@ -104,6 +104,8 @@ async function init() {
   let firstimer = false;
   if (!id) {
     console.log("Triggered registration");
+    if (localStorage.getItem("registering") === "true") return;
+    localStorage.setItem("registering", "true");
     showLoading("Registering...");
     const res = await callServer("DEVICEREGIS");
     if (!res.ok) {
@@ -114,6 +116,7 @@ async function init() {
     localStorage.setItem("device_id", deviceid);
     id = deviceid;
     firstimer = true;
+    localStorage.removeItem("registering");
   }
 
   let qrscanned = urlParams.get("scannedqr");
