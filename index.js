@@ -73,6 +73,15 @@ function hideError() {
   errorOverlay.classList.add('opacity-0', 'pointer-events-none');
 }
 
+async function callServer(requestType, args = {}) {
+  args["requestType"] = requestType;
+  return fetch("https://script.google.com/macros/s/AKfycbz7sqi_3OM0l7qhmT2J8-kW9gvNzyA2s6JW6EnKemE2sJZxPVgCMbf2ZAxoBZrL2SnK6A/exec",{
+    method: "POST",
+    headers: {"Content-Type": "text/plain"},
+    body: JSON.stringify(args)
+  });
+}
+
 async function init() {
   const stampcontainer = document.getElementById("stamp-container");
   stampcontainer.innerHTML = "";
@@ -88,17 +97,14 @@ async function init() {
       </p>
     </div>`
   }
+
+  const urlParams = new URLSearchParams(queryString);
+
   let id = localStorage.getItem("device_id");
   let firstimer = false;
   if (!id) {
     showLoading("Registering...");
-    const res = await fetch("https://script.google.com/macros/s/AKfycbz7sqi_3OM0l7qhmT2J8-kW9gvNzyA2s6JW6EnKemE2sJZxPVgCMbf2ZAxoBZrL2SnK6A/exec",{
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain"
-      },
-      body: JSON.stringify({"requestType": "DEVICEREGIS"})
-    });
+    const res = await callServer("DEVICEREGIS");
     if (!res.ok) {
       showError("Error", "We couldn't register your device at the moment. Please try again.");
       return;
@@ -108,15 +114,39 @@ async function init() {
     id = deviceid;
     firstimer = true;
   }
+
+  let qrscanned = urlParams.get("scannedqr");
+
+  if (qrscanned) {
+    firstimer = true;
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showLoading("Collecting this stamp...");
+    const res = await callServer("REDEEM", {"deviceID": id, "qrID": qrscanned});
+    if (!res.ok) {
+      showError("Error");
+      return;
+    }
+    const queryres = await res.json();
+    if (queryres.status !== "ok" && queryres.status !== "qrredeemdupe") {
+      showError("Device Error", "<big>\""+queryres.status+"\"</big><br><small>"+id+"</small><br>Please try again later!<br><br><small>Contact ETC staff members if the issue persist!</small>");
+      return;
+    }
+
+    //DATE	SESSIONID	STAMPS	LOTTONUM
+    let stamps = queryres.result[2].split("|"); // encoded as "1|2|3|..."
+    let c = 0
+    stamps.forEach(element => {
+      redeemStamp(Number(element));
+      c+=1;
+    });
+    if (c>=4 && !queryres.result[3]) {
+      openModal();
+    }
+  }
+
   if (!firstimer) {
     showLoading("Querying stamps data...");
-    const res = await fetch("https://script.google.com/macros/s/AKfycbz7sqi_3OM0l7qhmT2J8-kW9gvNzyA2s6JW6EnKemE2sJZxPVgCMbf2ZAxoBZrL2SnK6A/exec",{
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain"
-      },
-      body: JSON.stringify({"requestType": "QUERY", "deviceID": id})
-    });
+    const res = await callServer("QUERY", {"deviceID": id});
     if (!res.ok) {
       showError("Error");
       return;
