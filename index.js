@@ -103,6 +103,7 @@ async function init() {
   let id = localStorage.getItem("device_id");
   let firstimer = false;
   if (!id) {
+    console.log("Triggered registration");
     showLoading("Registering...");
     const res = await callServer("DEVICEREGIS");
     if (!res.ok) {
