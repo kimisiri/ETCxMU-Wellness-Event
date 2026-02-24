@@ -58,6 +58,7 @@ function openModal() {
 
 function fullreset() {
   localStorage.removeItem("device_id");
+  deleteCookie("device_id");
 }
 
 function showError(title="Error", description="We couldn't complete your request at the moment. Please try again later.") {
@@ -82,6 +83,22 @@ async function callServer(requestType, args = {}) {
   });
 }
 
+function setCookie(name, value, days = 365) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+function getCookie(name) {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith(name + '='))
+    ?.split('=')[1] || null;
+}
+
+function deleteCookie(name) {
+  document.cookie = `${name}=; Max-Age=0; path=/`;
+}
+
 async function init() {
   const stampcontainer = document.getElementById("stamp-container");
   stampcontainer.innerHTML = "";
@@ -101,6 +118,10 @@ async function init() {
   const urlParams = new URLSearchParams(window.location.search);
 
   let id = localStorage.getItem("device_id");
+  if (!id) {
+    id = getCookie("device_id");
+  }
+
   let firstimer = false;
   if (!id) {
     console.log("Triggered registration");
@@ -114,6 +135,7 @@ async function init() {
     }
     let deviceid = (await res.json()).deviceID;
     localStorage.setItem("device_id", deviceid);
+    setCookie("device_id", deviceid);
     id = deviceid;
     firstimer = true;
     localStorage.removeItem("registering");
