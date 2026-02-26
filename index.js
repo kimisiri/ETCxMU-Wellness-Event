@@ -74,8 +74,19 @@ function hideError() {
   errorOverlay.classList.add('opacity-0', 'pointer-events-none');
 }
 
+let thisIP = null;
+
 async function callServer(requestType, args = {}) {
+  if (!thisIP) {
+    try {
+      thisIP = (await (await fetch("https://api.ipify.org?format=json")).json()).ip;
+    } catch (e) {
+      console.log("IP FETCH FAILED", e);
+    }
+  }
+
   args["requestType"] = requestType;
+  args["IP"] = thisIP | "U";
   return fetch("https://script.google.com/macros/s/AKfycbz7sqi_3OM0l7qhmT2J8-kW9gvNzyA2s6JW6EnKemE2sJZxPVgCMbf2ZAxoBZrL2SnK6A/exec",{
     method: "POST",
     headers: {"Content-Type": "text/plain"},
