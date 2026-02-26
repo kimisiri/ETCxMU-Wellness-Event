@@ -242,6 +242,7 @@ document.addEventListener("visibilitychange", async function () {
   if (document.visibilityState === "visible") {
     fetching_db = true;
     await fetchstamps()
+    hideLoading();
     fetching_db = false;
   }
 });
