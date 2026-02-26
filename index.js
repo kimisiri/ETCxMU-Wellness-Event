@@ -115,19 +115,15 @@ function deleteCookie(name) {
 
 let fetching_db = false;
 async function fetchstamps() {
-  if (fetching_db) {return false;}
-  fetching_db = true
   showLoading("Retrieving stamps...");
   const res = await callServer("QUERY", {"deviceID": id});
   if (!res.ok) {
     showError("Error");
-    fetching_db = false;
     return false;
   }
   const queryres = await res.json();
   if (queryres.status !== "ok") {
     showError("Device Error", "<big>\""+queryres.status+"\"</big><br><small>"+id+"</small><br>Please try again later!<br><br><small>Contact ETC staff members if the issue persist!</small>");
-    fetching_db = false;
     return false;
   }
 
@@ -140,7 +136,6 @@ async function fetchstamps() {
   if (c>=4 && !queryres.result[3]) {
     openModal();
   }
-  fetching_db = false;
   return true;
 }
 
@@ -226,9 +221,12 @@ async function init() {
   }
 
   if (!firstimer) {
+    fetching_db = true;
     if (!(await fetchstamps())) {
+      fetching_db = false;
       return;
     }
+    fetching_db = false;
   }
   hideLoading();
 }
@@ -240,10 +238,12 @@ async function initwrapper() {
 
 initwrapper();
 
-document.addEventListener("visibilitychange", function () {
-  if (!initdone) {return;}
+document.addEventListener("visibilitychange", async function () {
+  if (!initdone || fetching_db) {return;}
   if (document.visibilityState === "visible") {
-    fetchstamps()
+    fetching_db = true;
+    await fetchstamps()
+    fetching_db = false;
   }
 });
 //openModal()
