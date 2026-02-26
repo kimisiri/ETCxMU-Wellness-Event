@@ -236,7 +236,7 @@ async function initwrapper() {
 }
 
 initwrapper();
-
+let fetching_db = false;
 document.addEventListener("visibilitychange", async function () {
   if (!initdone || fetching_db) {return;}
   if (document.visibilityState === "visible") {
