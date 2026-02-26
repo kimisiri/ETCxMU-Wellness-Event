@@ -90,7 +90,7 @@ async function callServer(requestType, args = {}) {
   args["requestType"] = requestType;
   args["IP"] = thisIP || "U";
   return fetch("https://script.google.com/macros/s/AKfycbz7sqi_3OM0l7qhmT2J8-kW9gvNzyA2s6JW6EnKemE2sJZxPVgCMbf2ZAxoBZrL2SnK6A/exec",{
-    method: "POST",
+    method: "GET",
     headers: {"Content-Type": "text/plain"},
     body: JSON.stringify(args)
   });
@@ -117,7 +117,6 @@ async function fetchstamps() {
   if (!id) {
     id = getCookie("device_id");
   }
-  showLoading("Retrieving stamps...");
   const res = await callServer("QUERY", {"deviceID": id});
   if (!res.ok) {
     showError("Error");
@@ -223,6 +222,8 @@ async function init() {
   }
 
   if (!firstimer) {
+    
+    showLoading("Retrieving stamps...");
     if (!(await fetchstamps())) {
       return;
     }
@@ -241,6 +242,8 @@ document.addEventListener("visibilitychange", async function () {
   if (!initdone || fetching_db) {return;}
   if (document.visibilityState === "visible") {
     fetching_db = true;
+    
+    showLoading("Retrieving stamps...");
     await fetchstamps()
     hideLoading();
     fetching_db = false;
