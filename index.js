@@ -112,6 +112,39 @@ function deleteCookie(name) {
   document.cookie = `${name}=; Max-Age=0; path=/`;
 }
 
+
+let fetching_db = false;
+async function fetchstamps() {
+  if (fetching_db) {return false;}
+  fetching_db = true
+  showLoading("Retrieving stamps...");
+  const res = await callServer("QUERY", {"deviceID": id});
+  if (!res.ok) {
+    showError("Error");
+    fetching_db = false;
+    return false;
+  }
+  const queryres = await res.json();
+  if (queryres.status !== "ok") {
+    showError("Device Error", "<big>\""+queryres.status+"\"</big><br><small>"+id+"</small><br>Please try again later!<br><br><small>Contact ETC staff members if the issue persist!</small>");
+    fetching_db = false;
+    return false;
+  }
+
+  let stamps = String(queryres.result[2]).split("|"); // encoded as "1|2|3|..."
+  let c = 0
+  stamps.forEach(element => {
+    redeemStamp(Number(element));
+    c+=1;
+  });
+  if (c>=4 && !queryres.result[3]) {
+    openModal();
+  }
+  fetching_db = false;
+  return true;
+}
+
+let initdone = false;
 async function init() {
   const stampcontainer = document.getElementById("stamp-container");
   stampcontainer.innerHTML = "";
@@ -144,6 +177,7 @@ async function init() {
     const res = await callServer("DEVICEREGIS");
     if (!res.ok) {
       showError("Error", "We couldn't register your device at the moment. Please try again.");
+      localStorage.removeItem("registering");
       return;
     }
     let deviceid = (await res.json()).deviceID;
@@ -192,31 +226,24 @@ async function init() {
   }
 
   if (!firstimer) {
-    showLoading("Retrieving stamps...");
-    const res = await callServer("QUERY", {"deviceID": id});
-    if (!res.ok) {
-      showError("Error");
+    if (!(await fetchstamps())) {
       return;
-    }
-    const queryres = await res.json();
-    if (queryres.status !== "ok") {
-      showError("Device Error", "<big>\""+queryres.status+"\"</big><br><small>"+id+"</small><br>Please try again later!<br><br><small>Contact ETC staff members if the issue persist!</small>");
-      return;
-    }
-
-    //DATE	SESSIONID	STAMPS	LOTTONUM
-    let stamps = String(queryres.result[2]).split("|"); // encoded as "1|2|3|..."
-    let c = 0
-    stamps.forEach(element => {
-      redeemStamp(Number(element));
-      c+=1;
-    });
-    if (c>=4 && !queryres.result[3]) {
-      openModal();
     }
   }
   hideLoading();
 }
 
-init()
+async function initwrapper() {
+  await init();
+  initdone = true;
+}
+
+initwrapper();
+
+document.addEventListener("visibilitychange", function () {
+  if (!initdone) {return;}
+  if (document.visibilityState === "visible") {
+    fetchstamps()
+  }
+});
 //openModal()
