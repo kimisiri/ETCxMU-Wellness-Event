@@ -112,9 +112,11 @@ function deleteCookie(name) {
   document.cookie = `${name}=; Max-Age=0; path=/`;
 }
 
-
-let fetching_db = false;
 async function fetchstamps() {
+  let id = localStorage.getItem("device_id");
+  if (!id) {
+    id = getCookie("device_id");
+  }
   showLoading("Retrieving stamps...");
   const res = await callServer("QUERY", {"deviceID": id});
   if (!res.ok) {
@@ -221,12 +223,9 @@ async function init() {
   }
 
   if (!firstimer) {
-    fetching_db = true;
     if (!(await fetchstamps())) {
-      fetching_db = false;
       return;
     }
-    fetching_db = false;
   }
   hideLoading();
 }
