@@ -85,8 +85,10 @@ async function callServer(requestType, args = {}) {
     }
   }
 
+  console.log("IP", thisIP);
+
   args["requestType"] = requestType;
-  args["IP"] = thisIP | "U";
+  args["IP"] = thisIP || "U";
   return fetch("https://script.google.com/macros/s/AKfycbz7sqi_3OM0l7qhmT2J8-kW9gvNzyA2s6JW6EnKemE2sJZxPVgCMbf2ZAxoBZrL2SnK6A/exec",{
     method: "POST",
     headers: {"Content-Type": "text/plain"},
